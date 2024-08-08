@@ -48,7 +48,7 @@ allowed_hosts = list(set([f"{k}:{v}" for k,v in ParseSPF(f"spf.{SPF_DOMAIN}")]))
 
 dns_entries = [{"content": []}]
 for host in allowed_hosts:
-    if(len(" ".join(dns_entries[-1]["content"] + [host])) > 225):
+    if(len(" ".join(dns_entries[-1]["content"] + [host])) > 220):
         dns_entries.append({"content": [host]})
     else:
         dns_entries[-1]["content"].append(host)
@@ -59,6 +59,7 @@ for i,x in enumerate(dns_entries):
     dns_entries[i]["content"] = f"v=spf1 {' '.join(x['content'])}"
     if i < len(dns_entries)-1:
         dns_entries[i]["content"] += f" include:s{i+1}._spf.{SPF_DOMAIN}"
+    dns_entries[i]["content"] += " ~all"
 
 
 cf = CloudFlare.CloudFlare(token = SPF_CF_TOKEN)
@@ -73,7 +74,7 @@ for dns_entry in cf.zones.dns_records.get(zone_id, params={"comment": "SPF Flatt
 for dns_entry in dns_entries:
     try:
         r = cf.zones.dns_records.post(zone_id,data=dns_entry)
-        print(f"Created record {r['id']}")
+        print(f"Created record {r['id']}: {r['content']}")
     except:
         pass
 
