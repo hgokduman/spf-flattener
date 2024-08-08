@@ -1,2 +1,2 @@
 dnspython
-cloudflare
+cloudflare==2.20.0

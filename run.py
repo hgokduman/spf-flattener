@@ -1,5 +1,5 @@
 import dns.resolver
-from cloudflare import Cloudflare
+import CloudFlare
 import os
 
 SPF_CF_TOKEN = os.environ["SPF_CF_TOKEN"]
@@ -26,6 +26,10 @@ def ParseSPF(host):
                 
             parsed = [tuple(f.split(":",1)) if ":" in f else (f, None) for f in fields if ":" in f or f in ["mx", "ip4", "ip6"]]
             for tag,value in parsed:
+                try:
+                    value = value.replace('"', '')
+                except:
+                    pass
                 if tag == "include":
                     yield from ParseSPF(value)
                 elif tag == "ip4":
@@ -62,7 +66,7 @@ for i,x in enumerate(dns_entries):
     dns_entries[i]["content"] += " ~all"
 
 
-cf = Cloudflare(token = SPF_CF_TOKEN)
+cf = CloudFlare.CloudFlare(token = SPF_CF_TOKEN)
 zone_id = cf.zones.get(params={"name": SPF_DOMAIN})[0]["id"]
 for dns_entry in cf.zones.dns_records.get(zone_id, params={"comment": "SPF Flattener"}):
     try:
