@@ -1,5 +1,5 @@
 import dns.resolver
-import CloudFlare
+from cloudflare import Cloudflare
 import os
 
 SPF_CF_TOKEN = os.environ["SPF_CF_TOKEN"]
@@ -62,7 +62,7 @@ for i,x in enumerate(dns_entries):
     dns_entries[i]["content"] += " ~all"
 
 
-cf = CloudFlare.CloudFlare(token = SPF_CF_TOKEN)
+cf = Cloudflare(token = SPF_CF_TOKEN)
 zone_id = cf.zones.get(params={"name": SPF_DOMAIN})[0]["id"]
 for dns_entry in cf.zones.dns_records.get(zone_id, params={"comment": "SPF Flattener"}):
     try:
